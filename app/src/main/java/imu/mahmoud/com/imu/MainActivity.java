@@ -104,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onSensorChanged(SensorEvent sensorEvent) {
         if(sensorEvent.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
             timestamps.setText(String.format(Locale.US, "%d", sensorEvent.timestamp));
-            values.setText(String.format(Locale.US, "[%10.7f, %10.7f, %10.7f, %10.7f]",
+            values.setText(String.format(Locale.US, "%10.7f\n%10.7f\n%10.7f\n%10.7f",
                     sensorEvent.values[3],
                     sensorEvent.values[0],
                     sensorEvent.values[1],
