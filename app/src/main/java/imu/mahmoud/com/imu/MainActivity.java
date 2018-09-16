@@ -21,6 +21,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.Calendar;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
@@ -103,7 +104,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
         if(sensorEvent.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
-            timestamps.setText(String.format(Locale.US, "%d", sensorEvent.timestamp));
+            long timestamp = Calendar.getInstance().getTime().getTime();
+            timestamps.setText(String.format(Locale.US, "%d", timestamp));
             values.setText(String.format(Locale.US, "%10.7f\n%10.7f\n%10.7f\n%10.7f",
                     sensorEvent.values[3],
                     sensorEvent.values[0],
@@ -111,7 +113,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     sensorEvent.values[2]));
 
             String str = String.format(Locale.US, "%d,%10.7f,%10.7f,%10.7f,%10.7f\n",
-                    sensorEvent.timestamp,
+                    timestamp,
                     sensorEvent.values[3],
                     sensorEvent.values[0],
                     sensorEvent.values[1],
@@ -142,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         // Initialize sensor
         sensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
-        mSensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_FASTEST);
     }
 
     private void stopIMU() {
@@ -151,6 +153,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         try {
             outputStreamWriter.flush();
             outputStreamWriter.close();
+            fileOutputStream.flush();
+            fileOutputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
