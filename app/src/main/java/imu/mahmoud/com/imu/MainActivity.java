@@ -12,6 +12,9 @@ import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.ToggleButton;
@@ -38,6 +41,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     Sensor sensor;
 
     ToggleButton button;
+    Button button2;
+    ToggleButton button3;
+    boolean isDiscontinuousWriteEnabled = false;
+    boolean nullifyQuats = false;
 
     File file;
 
@@ -50,6 +57,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         ActivityCompat.requestPermissions(this, permissions, 1);
 
         button = findViewById(R.id.button);
+        button2 = findViewById(R.id.button2);
+        button3 = findViewById(R.id.button3);
 
         button.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -59,6 +68,36 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 } else {
                     stopIMU();
                 }
+            }
+        });
+
+        button3.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(b) {
+                    isDiscontinuousWriteEnabled = true;
+                    button.setEnabled(false);
+
+                    nullifyQuats = true;
+                    startIMU();
+                } else {
+                    isDiscontinuousWriteEnabled = false;
+                    button.setEnabled(true);
+
+                    stopIMU();
+                }
+            }
+        });
+
+        button2.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if(motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                    nullifyQuats = false;
+                } else if(motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                    nullifyQuats = true;
+                }
+                return false;
             }
         });
 
@@ -106,18 +145,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if(sensorEvent.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
             long timestamp = Calendar.getInstance().getTime().getTime();
             timestamps.setText(String.format(Locale.US, "%d", timestamp));
+            String str = "";
+
             values.setText(String.format(Locale.US, "%10.7f\n%10.7f\n%10.7f\n%10.7f",
                     sensorEvent.values[3],
                     sensorEvent.values[0],
                     sensorEvent.values[1],
                     sensorEvent.values[2]));
 
-            String str = String.format(Locale.US, "%d,%10.7f,%10.7f,%10.7f,%10.7f\n",
+            // timestamp,getTracing,w,x,y,z
+            str = String.format(Locale.US, "%d,%10.7f,%10.7f,%10.7f,%10.7f,%d\n",
                     timestamp,
                     sensorEvent.values[3],
                     sensorEvent.values[0],
                     sensorEvent.values[1],
-                    sensorEvent.values[2]);
+                    sensorEvent.values[2],
+                    nullifyQuats?0:1);
 
             try {
                 outputStreamWriter.write(str);
